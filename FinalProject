@@ -1,4 +1,5 @@
-package Project;
+package Testng;
+
 import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -7,74 +8,72 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.*;
 
-public class FinalProject {
-     public static void main(String[] args) {
-	     
-	        WebDriver driver = new ChromeDriver();
-	        driver.manage().window().maximize();
-	        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-	        driver.get("https://parabank.parasoft.com/parabank/register.htm");
-	//REGISTER      
-	       WebElement firstname= driver.findElement(By.name("customer.firstName"));
-	       firstname.sendKeys("ABC");
-	       WebElement lastname =driver.findElement(By.name("customer.lastName"));
-	       lastname.sendKeys("Doe");
-	       WebElement address=driver.findElement(By.name("customer.address.street"));
-	       address.sendKeys("123 main street");
-	       WebElement city=driver.findElement(By.name("customer.address.city"));
-	       city.sendKeys("New York");
-	       WebElement State=driver.findElement(By.name("customer.address.state"));
-	       State.sendKeys("NY");
-	       WebElement Zipcode=driver.findElement(By.name("customer.address.zipCode"));
-	       Zipcode.sendKeys("10001");
-	       WebElement Phone=driver.findElement(By.name("customer.phoneNumber"));
-	       Phone.sendKeys("1234567890");
-	       WebElement ssn=driver.findElement(By.name("customer.ssn"));
-	       ssn.sendKeys("123-45-6789");
-	       WebElement username=driver.findElement(By.name("customer.username"));
-	       username.sendKeys("arunaa");
-	       WebElement password=driver.findElement(By.name("customer.password"));
-	       password.sendKeys("987654");
-	       WebElement confirmpassword= driver.findElement(By.name("repeatedPassword"));
-	       confirmpassword.sendKeys("987654");
-	       WebElement register=driver.findElement(By.xpath("//input[@value='Register']"));
-          register.click();
-	       
-        //LOGIN  
-          
-          WebElement username1=driver.findElement(By.name("username"));
-	      username1.sendKeys("arunaa");
-	      WebElement password1=driver.findElement(By.name("username"));
-	      password1.sendKeys("987654");
-	      WebElement Login=driver.findElement(By.xpath("//input[@value='Log In']"));
-	      Login.click();
+public class FinalProjectParaBank {
 
-	    //OPEN NEW ACCOUNT   
-	        WebElement OpenNewAccount= wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div[1]/div[3]/div[1]/ul/li[1]/a")));
-	        OpenNewAccount.click();
-	        WebElement accountTypeDropdown = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("type")));
-	        Select accountType = new Select(accountTypeDropdown);
-	        accountType.selectByVisibleText("CHECKING");
-	        WebElement fromAccountDropdown = driver.findElement(By.id("fromAccountId"));
-	        Select fromAccount = new Select(fromAccountDropdown);
-	        fromAccount.selectByIndex(0);
-	        WebElement OpenNewAccount1= wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@value='Open New Account']")));
-	        OpenNewAccount1.click();
-	       
-	    //NEWACCOUNT ID    
-	        
-	        WebElement newAccountId = wait.until(ExpectedConditions.elementToBeClickable(By.id("newAccountId")));
-	        newAccountId.click();
-	        Select month = new Select(driver.findElement(By.id("month")));
-	        month.selectByVisibleText("March");
-	        Select transactionType = new Select(driver.findElement(By.id("transactionType")));
-	        transactionType.selectByVisibleText("Credit");
-	        driver.findElement(By.cssSelector("input[value='Go']")).click();
-	        
-	   //LOGOUT     
-	        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a[href='logout.htm']"))).click();
+    WebDriver driver;
+    WebDriverWait wait;
 
-	        driver.quit();
-	    }
-	}
+    @BeforeClass
+    public void setup() {
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        driver.get("https://parabank.parasoft.com/parabank/register.htm");
+    }
+
+    @Test
+    public void registerTest() {
+        driver.findElement(By.name("customer.firstName")).sendKeys("ABC");
+        driver.findElement(By.name("customer.lastName")).sendKeys("Doe");
+        driver.findElement(By.name("customer.address.street")).sendKeys("123 main street");
+        driver.findElement(By.name("customer.address.city")).sendKeys("New York");
+        driver.findElement(By.name("customer.address.state")).sendKeys("NY");
+        driver.findElement(By.name("customer.address.zipCode")).sendKeys("10001");
+        driver.findElement(By.name("customer.phoneNumber")).sendKeys("1234567890");
+        driver.findElement(By.name("customer.ssn")).sendKeys("123-45-6789");
+        driver.findElement(By.name("customer.username")).sendKeys("arunaa");
+        driver.findElement(By.name("customer.password")).sendKeys("987654");
+        driver.findElement(By.name("repeatedPassword")).sendKeys("987654");
+        driver.findElement(By.xpath("//input[@value='Register']")).click();
+    }
+
+    @Test(dependsOnMethods = "registerTest")
+    public void loginTest() {
+        driver.findElement(By.name("username")).sendKeys("arunaa");
+        driver.findElement(By.name("password")).sendKeys("987654");
+        driver.findElement(By.xpath("//input[@value='Log In']")).click();
+    }
+
+    @Test(dependsOnMethods = "loginTest")
+    public void openAccountTest() {
+        WebElement openNewAccount =
+                wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Open New Account")));
+        openNewAccount.click();
+
+        Select accountType = new Select(driver.findElement(By.id("type")));
+        accountType.selectByVisibleText("CHECKING");
+
+        Select fromAccount = new Select(driver.findElement(By.id("fromAccountId")));
+        fromAccount.selectByIndex(0);
+
+        driver.findElement(By.xpath("//input[@value='Open New Account']")).click();
+
+        WebElement newAccountId =
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("newAccountId")));
+        newAccountId.click();
+    }
+
+    @Test(dependsOnMethods = "openAccountTest")
+    public void logoutTest() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Log Out"))).click();
+    }
+
+    @AfterClass
+    public void teardown() {
+        driver.quit();
+    }
+}
+
+
